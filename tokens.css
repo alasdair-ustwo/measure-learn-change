@@ -1,0 +1,443 @@
+:root {
+  /* Primitive colours */
+  --colour-ink: #2b2b2b;
+  --colour-mint: #00ffaa;
+  --colour-white: #ffffff;
+  --colour-green: #006837;
+  --colour-red: #bf1722;
+  --colour-grey-dark: #5e5e5e;
+  --colour-grey-mid: #aaaaaa;
+  --colour-grey-light: #eeeeee;
+  --colour-grey-lightest: #f7f7f7;
+
+  --colour-sunflower: #ffe70a;
+  --colour-sunflower-50: #fff385;
+  --colour-sunflower-5: #fffef3;
+  --colour-rose: #fa99ff;
+  --colour-rose-50: #fdccff;
+  --colour-rose-5: #fffaff;
+  --colour-volt: #d0ff14;
+  --colour-volt-50: #e7ff8a;
+  --colour-volt-5: #fdfff3;
+
+  --colour-ink-alpha-4: rgb(43 43 43 / 4%);
+  --colour-ink-alpha-6: rgb(43 43 43 / 6%);
+  --colour-ink-alpha-8: rgb(43 43 43 / 8%);
+  --colour-ink-alpha-10: rgb(43 43 43 / 10%);
+  --colour-ink-alpha-16: rgb(43 43 43 / 16%);
+  --colour-ink-alpha-60: rgb(43 43 43 / 60%);
+
+  /* Primitive typography */
+  --font-family-display: "Bebas Neue";
+  --font-family-text: "Inter";
+  --font-family-mono: "DM Mono";
+
+  --font-style-regular: normal;
+  --font-style-medium: normal;
+  --font-style-bold: normal;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --letter-spacing-none: 0rem;
+
+  --font-size-12: 0.75rem;
+  --font-size-14: 0.875rem;
+  --font-size-16: 1rem;
+  --font-size-20: 1.25rem;
+  --font-size-24: 1.5rem;
+  --font-size-28: 1.75rem;
+  --font-size-32: 2rem;
+  --font-size-40: 2.5rem;
+  --font-size-48: 3rem;
+  --font-size-56: 3.5rem;
+  --font-size-72: 4.5rem;
+
+  --line-height-16: 1rem;
+  --line-height-18: 1.125rem;
+  --line-height-22: 1.375rem;
+  --line-height-24: 1.5rem;
+  --line-height-28: 1.75rem;
+  --line-height-32: 2rem;
+  --line-height-36: 2.25rem;
+  --line-height-44: 2.75rem;
+  --line-height-52: 3.25rem;
+  --line-height-60: 3.75rem;
+  --line-height-76: 4.75rem;
+
+  /* Primitive spacing */
+  --space-0: 0rem;
+  --space-4: 0.25rem;
+  --space-8: 0.5rem;
+  --space-12: 0.75rem;
+  --space-16: 1rem;
+  --space-24: 1.5rem;
+  --space-32: 2rem;
+  --space-40: 2.5rem;
+  --space-48: 3rem;
+  --space-64: 4rem;
+  --space-80: 5rem;
+  --space-96: 6rem;
+  --space-128: 8rem;
+
+  /* Primitive sizes */
+  --size-8: 0.5rem;
+  --size-16: 1rem;
+  --size-20: 1.25rem;
+  --size-24: 1.5rem;
+  --size-32: 2rem;
+  --size-40: 2.5rem;
+  --size-48: 3rem;
+  --size-56: 3.5rem;
+  --size-64: 4rem;
+  --size-80: 5rem;
+  --size-96: 6rem;
+  --size-120: 7.5rem;
+
+  /* Primitive radii and borders */
+  --radius-4: 0.25rem;
+  --radius-8: 0.5rem;
+  --radius-16: 1rem;
+  --radius-24: 1.5rem;
+  --radius-40: 2.5rem;
+  --radius-full: 62.4375rem;
+
+  --border-width-1: 0.0625rem;
+  --border-width-2: 0.125rem;
+
+  /* Semantic colours: light mode */
+  --surface-page-bg: var(--colour-grey-lightest);
+  --surface-raised: var(--colour-white);
+  --surface-scrim: var(--colour-ink-alpha-60);
+  --surface-hover-overlay: var(--colour-ink-alpha-8);
+  --surface-pressed-overlay: var(--colour-ink-alpha-16);
+  --surface-accent-sunflower: var(--colour-sunflower);
+  --surface-accent-rose: var(--colour-rose);
+  --surface-accent-volt: var(--colour-volt);
+
+  --text-default: var(--colour-ink);
+  --text-muted: var(--colour-grey-dark);
+  --text-link: var(--colour-ink);
+  --text-inverted: var(--colour-white);
+
+  --icon-default: var(--colour-ink);
+  --icon-muted: var(--colour-ink-alpha-60);
+  --icon-inverted: var(--colour-white);
+
+  --border-divider: var(--colour-ink-alpha-10);
+  --border-control: var(--colour-ink);
+  --border-focus: var(--colour-ink);
+
+  --action-primary-background: var(--colour-mint);
+  --action-primary-text: var(--colour-ink);
+  --action-primary-hover-overlay: var(--colour-ink-alpha-8);
+  --action-primary-pressed-overlay: var(--colour-ink-alpha-16);
+
+  --action-secondary-border: var(--colour-ink);
+  --action-secondary-text: var(--colour-ink);
+
+  --action-tertiary-text: var(--colour-ink);
+  --action-tertiary-icon: var(--colour-ink);
+  --action-tertiary-pressed-text: var(--colour-ink);
+
+  --action-disabled-background: var(--colour-grey-light);
+  --action-disabled-text: var(--colour-grey-mid);
+  --action-disabled-border: var(--colour-grey-mid);
+
+  --feedback-error: var(--colour-red);
+  --feedback-success: var(--colour-green);
+
+  --control-on-track: var(--colour-ink);
+  --control-on-handle: var(--colour-white);
+  --control-selected-background: var(--colour-rose-50);
+  --control-unselected-background: var(--colour-rose-5);
+
+  /* Elevation */
+  --elevation-subtle-color: var(--colour-ink-alpha-4);
+  --elevation-subtle-offset-x: 0.0625rem;
+  --elevation-subtle-offset-y: 0.125rem;
+  --elevation-subtle-blur: 0.5rem;
+  --elevation-subtle-android-dp: 2;
+
+  --elevation-soft-color: var(--colour-ink-alpha-8);
+  --elevation-soft-offset-x: 0.125rem;
+  --elevation-soft-offset-y: 0.25rem;
+  --elevation-soft-blur: 1.3125rem;
+  --elevation-soft-android-dp: 6;
+
+  --elevation-lifted-color: var(--colour-ink-alpha-6);
+  --elevation-lifted-offset-x: 0rem;
+  --elevation-lifted-offset-y: 0.875rem;
+  --elevation-lifted-blur: 0.875rem;
+  --elevation-lifted-android-dp: 10;
+
+  --shadow-subtle:
+    var(--elevation-subtle-offset-x) var(--elevation-subtle-offset-y) var(--elevation-subtle-blur) 0rem var(--elevation-subtle-color);
+
+  --shadow-soft:
+    var(--elevation-soft-offset-x) var(--elevation-soft-offset-y) var(--elevation-soft-blur) 0rem var(--elevation-soft-color);
+
+  --shadow-lifted:
+    var(--elevation-lifted-offset-x) var(--elevation-lifted-offset-y) var(--elevation-lifted-blur) 0rem var(--elevation-lifted-color);
+
+  /* Component dimensions */
+  --control-height-min: 3rem;
+  --border-width-default: 0.0625rem;
+  --icon-size-default: 1.5rem;
+
+  --button-radius: 62.4375rem;
+
+  --button-lg-height-min: 3rem;
+  --button-lg-padding-vertical: 0.75rem;
+  --button-lg-padding-horizontal: 1.5rem;
+  --button-lg-gap: 0.5rem;
+  --button-lg-icon-size: 1.25rem;
+
+  --button-sm-height-min: 2rem;
+  --button-sm-padding-vertical: 0.25rem;
+  --button-sm-padding-horizontal: 1rem;
+  --button-sm-gap: 0.25rem;
+  --button-sm-icon-size: 1rem;
+
+  --button-tertiary-padding-horizontal: 0rem;
+
+  --focus-ring-offset: 0.125rem;
+  --focus-ring-extent: 0.25rem;
+  --focus-ring-width: 0.125rem;
+
+  --checkbox-size: 1.5rem;
+  --checkbox-radius: 0.25rem;
+  --checkbox-gap: 0.75rem;
+  --checkbox-icon-size: 1.25rem;
+
+  --toggle-track-width: 3.5rem;
+  --toggle-track-height: 2rem;
+  --toggle-track-padding: 0.25rem;
+  --toggle-track-radius: 62.4375rem;
+  --toggle-handle-size: 1.5rem;
+
+  --toggle-row-gap: 1.5rem;
+  --toggle-row-height-min: 3rem;
+
+  --filter-chip-height-min: 2rem;
+  --filter-chip-padding-horizontal: 0.75rem;
+  --filter-chip-padding-vertical: 0.25rem;
+  --filter-chip-gap: 0.5rem;
+  --filter-chip-icon-size: 1rem;
+  --filter-chip-radius: 62.4375rem;
+
+  --heading-gap: 0.5rem;
+}
+
+/* Mobile is the default mode. */
+:root,
+[data-layout="mobile"] {
+  --layout-screen-width: 24.5625rem;
+  --layout-screen-margin: 1.5rem;
+  --layout-grid-gutter: 1rem;
+  --layout-grid-columns: 4;
+  --layout-section-gap: 3rem;
+  --layout-heading-gap: 1rem;
+  --layout-control-lg-height: 3rem;
+
+  --type-display-lg-size: 2.5rem;
+  --type-display-lg-line-height: 2.75rem;
+  --type-display-lg-letter-spacing: 0rem;
+
+  --type-heading-lg-size: 2rem;
+  --type-heading-lg-line-height: 2.25rem;
+  --type-heading-lg-letter-spacing: 0rem;
+
+  --type-heading-md-size: 1.5rem;
+  --type-heading-md-line-height: 1.75rem;
+  --type-heading-md-letter-spacing: 0rem;
+
+  --type-heading-sm-size: 1.25rem;
+  --type-heading-sm-line-height: 1.5rem;
+  --type-heading-sm-letter-spacing: 0rem;
+
+  --type-title-md-size: 1.25rem;
+  --type-title-md-line-height: 1.5rem;
+  --type-title-md-letter-spacing: 0rem;
+
+  --type-body-lg-size: 1rem;
+  --type-body-lg-line-height: 1.375rem;
+  --type-body-lg-letter-spacing: 0rem;
+
+  --type-body-md-size: 0.875rem;
+  --type-body-md-line-height: 1.125rem;
+  --type-body-md-letter-spacing: 0rem;
+
+  --type-body-sm-size: 0.75rem;
+  --type-body-sm-line-height: 1rem;
+  --type-body-sm-letter-spacing: 0rem;
+
+  --type-overline-sm-size: 0.75rem;
+  --type-overline-sm-line-height: 1rem;
+  --type-overline-sm-letter-spacing: 0rem;
+}
+
+[data-layout="tablet"] {
+  --layout-screen-width: 48rem;
+  --layout-screen-margin: 2rem;
+  --layout-grid-gutter: 1.5rem;
+  --layout-grid-columns: 8;
+
+  --type-display-lg-size: 3.5rem;
+  --type-display-lg-line-height: 3.75rem;
+  --type-heading-lg-size: 2.5rem;
+  --type-heading-lg-line-height: 2.75rem;
+  --type-heading-md-size: 1.75rem;
+  --type-heading-md-line-height: 2rem;
+  --type-heading-sm-size: 1.25rem;
+  --type-heading-sm-line-height: 1.5rem;
+}
+
+[data-layout="desktop"] {
+  --layout-screen-width: 80rem;
+  --layout-screen-margin: 4rem;
+  --layout-grid-gutter: 1.5rem;
+  --layout-grid-columns: 12;
+
+  --type-display-lg-size: 4.5rem;
+  --type-display-lg-line-height: 4.75rem;
+  --type-heading-lg-size: 3rem;
+  --type-heading-lg-line-height: 3.25rem;
+  --type-heading-md-size: 2rem;
+  --type-heading-md-line-height: 2.25rem;
+  --type-heading-sm-size: 1.5rem;
+  --type-heading-sm-line-height: 1.75rem;
+}
+
+/* Typography styles */
+.display-lg-regular {
+  font-family: var(--font-family-display), sans-serif;
+  font-weight: var(--font-weight-regular);
+  font-size: var(--type-display-lg-size);
+  line-height: var(--type-display-lg-line-height);
+  letter-spacing: var(--type-display-lg-letter-spacing);
+}
+
+.heading-lg-regular {
+  font-family: var(--font-family-display), sans-serif;
+  font-weight: var(--font-weight-regular);
+  font-size: var(--type-heading-lg-size);
+  line-height: var(--type-heading-lg-line-height);
+  letter-spacing: var(--type-heading-lg-letter-spacing);
+}
+
+.heading-md-regular {
+  font-family: var(--font-family-display), sans-serif;
+  font-weight: var(--font-weight-regular);
+  font-size: var(--type-heading-md-size);
+  line-height: var(--type-heading-md-line-height);
+  letter-spacing: var(--type-heading-md-letter-spacing);
+}
+
+.heading-sm-regular {
+  font-family: var(--font-family-display), sans-serif;
+  font-weight: var(--font-weight-regular);
+  font-size: var(--type-heading-sm-size);
+  line-height: var(--type-heading-sm-line-height);
+  letter-spacing: var(--type-heading-sm-letter-spacing);
+}
+
+.title-md-medium {
+  font-family: var(--font-family-text), sans-serif;
+  font-weight: var(--font-weight-medium);
+  font-size: var(--type-title-md-size);
+  line-height: var(--type-title-md-line-height);
+  letter-spacing: var(--type-title-md-letter-spacing);
+}
+
+.body-lg-regular,
+.body-lg-medium {
+  font-family: var(--font-family-text), sans-serif;
+  font-size: var(--type-body-lg-size);
+  line-height: var(--type-body-lg-line-height);
+  letter-spacing: var(--type-body-lg-letter-spacing);
+}
+
+.body-md-regular,
+.body-md-medium {
+  font-family: var(--font-family-text), sans-serif;
+  font-size: var(--type-body-md-size);
+  line-height: var(--type-body-md-line-height);
+  letter-spacing: var(--type-body-md-letter-spacing);
+}
+
+.body-sm-regular,
+.body-sm-medium {
+  font-family: var(--font-family-text), sans-serif;
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line-height);
+  letter-spacing: var(--type-body-sm-letter-spacing);
+}
+
+.body-lg-regular,
+.body-md-regular,
+.body-sm-regular {
+  font-weight: var(--font-weight-regular);
+}
+
+.body-lg-medium,
+.body-md-medium,
+.body-sm-medium {
+  font-weight: var(--font-weight-medium);
+}
+
+.overline-sm-regular {
+  font-family: var(--font-family-mono), monospace;
+  font-weight: var(--font-weight-regular);
+  font-size: var(--type-overline-sm-size);
+  line-height: var(--type-overline-sm-line-height);
+  letter-spacing: var(--type-overline-sm-letter-spacing);
+}
+
+/* Documentation typography */
+.doc-title,
+.doc-section,
+.doc-group,
+.doc-body,
+.doc-label,
+.doc-meta {
+  font-family: var(--font-family-text), sans-serif;
+  letter-spacing: 0rem;
+}
+
+.doc-title {
+  font-weight: 600;
+  font-size: 2.5rem;
+  line-height: 2.875rem;
+}
+
+.doc-section {
+  font-weight: 600;
+  font-size: 2rem;
+  line-height: 2.375rem;
+}
+
+.doc-group {
+  font-weight: 600;
+  font-size: 1.5rem;
+  line-height: 1.875rem;
+}
+
+.doc-body {
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.doc-label {
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.doc-meta {
+  font-weight: 400;
+  font-size: 0.75rem;
+  line-height: 1.0625rem;
+}

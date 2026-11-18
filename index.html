@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en" data-layout="mobile">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Measure, learn, change</title>
+<meta name="description" content="Do component contracts and an authoring skill help an AI agent build a design-system component that is true to its Figma spec? Eval results for the Modal.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- The ustwo design system tokens, unchanged from packages/design-system/src/tokens/tokens.css -->
+<link rel="stylesheet" href="tokens.css">
+<script>
+  // tokens.css switches type and layout scales by data-layout, matching the
+  // Figma "4 · Layout" modes (mobile 393, tablet 768, desktop 1280).
+  (function () {
+    var tablet = matchMedia('(min-width: 48rem)');
+    var desktop = matchMedia('(min-width: 75rem)');
+    function set() {
+      document.documentElement.dataset.layout = desktop.matches ? 'desktop' : tablet.matches ? 'tablet' : 'mobile';
+    }
+    set();
+    tablet.addEventListener('change', set);
+    desktop.addEventListener('change', set);
+  })();
+</script>
+<style>
+  :root { color-scheme: light; }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--surface-page-bg);
+    color: var(--text-default);
+    font-family: var(--font-family-text), sans-serif;
+  }
+
+  h1, h2, h3, p, ul, ol, figure, blockquote { margin: 0; }
+
+  .page {
+    max-width: var(--layout-screen-width);
+    margin: 0 auto;
+    padding: 0 var(--layout-screen-margin);
+  }
+
+  .visually-hidden {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+
+  .overline {
+    font-family: var(--font-family-mono), monospace;
+    font-size: var(--type-overline-sm-size);
+    line-height: var(--type-overline-sm-line-height);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* Header */
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-16);
+    padding: var(--space-24) 0;
+    border-bottom: var(--border-width-1) solid var(--border-divider);
+  }
+  .wordmark {
+    font-family: var(--font-family-display), sans-serif;
+    font-size: var(--font-size-28);
+    line-height: 1;
+  }
+
+  /* Hero */
+  .hero {
+    /* The headline is the closing slide of a talk, so it runs larger than
+       display/lg (72px), and fits the first screen: no global token for this size yet. */
+    --c-hero-size: clamp(4.5rem, min(15vw, 15vh), 13rem);
+    padding: var(--space-48) 0;
+    display: grid;
+    gap: var(--space-24);
+  }
+  .hero h1 {
+    font-family: var(--font-family-display), sans-serif;
+    font-weight: var(--font-weight-regular);
+    font-size: var(--c-hero-size);
+    line-height: 0.88;
+    text-transform: uppercase;
+  }
+  .hero h1 span { display: block; }
+  .hero h1 .mint {
+    background: var(--action-primary-background);
+    padding: 0 var(--space-16);
+    margin-left: calc(-1 * var(--space-16));
+    width: fit-content;
+    border-radius: var(--radius-16);
+  }
+  .lede {
+    max-width: 44rem;
+    font-size: var(--type-title-md-size);
+    line-height: var(--type-title-md-line-height);
+    font-weight: var(--font-weight-medium);
+  }
+
+  /* Headline numbers */
+  .scores {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-12);
+    align-items: stretch;
+  }
+  .score {
+    --c-score-size: clamp(4rem, min(9vw, 10vh), 8rem);
+    background: var(--surface-raised);
+    border-radius: var(--radius-24);
+    box-shadow: var(--shadow-lifted);
+    padding: var(--space-24);
+    display: grid;
+    gap: var(--space-8);
+    align-content: start;
+
+    &[data-highlight='true'] { background: var(--action-primary-background); }
+  }
+  .score-value {
+    font-family: var(--font-family-display), sans-serif;
+    font-size: var(--c-score-size);
+    line-height: 0.9;
+  }
+  .score-value small { font-size: 0.45em; }
+  .score-name {
+    font-family: var(--font-family-display), sans-serif;
+    font-size: var(--type-heading-sm-size);
+    line-height: var(--type-heading-sm-line-height);
+  }
+  .score-detail { font-size: var(--type-body-md-size); line-height: var(--type-body-md-line-height); }
+  .score-arrow { display: none; align-self: center; justify-self: center; }
+  .scores-caption { margin-top: var(--space-16); font-size: var(--type-body-md-size); line-height: var(--type-body-md-line-height); color: var(--text-muted); }
+
+  [data-layout='tablet'] .scores,
+  [data-layout='desktop'] .scores {
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+  }
+  [data-layout='tablet'] .score-arrow,
+  [data-layout='desktop'] .score-arrow { display: block; }
+
+  /* Sections */
+  /* Grid tracks would otherwise grow to the widest child (the matrix table),
+     pushing the page wider than the screen. */
+  .hero, .section, .strip { grid-template-columns: minmax(0, 1fr); }
+
+  .section {
+    padding: var(--space-80) 0;
+    border-top: var(--border-width-1) solid var(--border-divider);
+    display: grid;
+    gap: var(--space-40);
+  }
+  .section-head {
+    display: grid;
+    gap: var(--space-16);
+    max-width: 48rem;
+  }
+  .section-head h2 {
+    font-family: var(--font-family-display), sans-serif;
+    font-weight: var(--font-weight-regular);
+    font-size: var(--type-display-lg-size);
+    line-height: var(--type-display-lg-line-height);
+    text-transform: uppercase;
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-16);
+  }
+  .step {
+    font-family: var(--font-family-mono), monospace;
+    font-size: var(--font-size-14);
+    line-height: 1;
+    padding: var(--space-8) var(--space-12);
+    border-radius: var(--radius-full);
+    background: var(--c-step-bg, var(--surface-accent-volt));
+    transform: translateY(-0.5em);
+  }
+  .section-head p {
+    font-size: var(--type-body-lg-size);
+    line-height: var(--type-body-lg-line-height);
+    color: var(--text-muted);
+  }
+  .sub-head {
+    font-family: var(--font-family-display), sans-serif;
+    font-weight: var(--font-weight-regular);
+    font-size: var(--type-heading-md-size);
+    line-height: var(--type-heading-md-line-height);
+    text-transform: uppercase;
+  }
+
+  .card {
+    background: var(--surface-raised);
+    border-radius: var(--radius-24);
+    box-shadow: var(--shadow-lifted);
+    padding: var(--space-32) var(--space-24);
+  }
+  [data-layout='desktop'] .card { padding: var(--space-32); }
+
+  .grid {
+    display: grid;
+    gap: var(--space-16);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  }
+
+  /* Measure */
+  .prompt {
+    display: grid;
+    gap: var(--space-16);
+  }
+  .prompt blockquote {
+    font-family: var(--font-family-mono), monospace;
+    font-size: var(--font-size-16);
+    line-height: var(--line-height-24);
+    border-left: var(--border-width-2) solid var(--border-control);
+    padding-left: var(--space-16);
+  }
+  .prompt blockquote p + p { margin-top: var(--space-12); }
+
+  .setup { display: grid; gap: var(--space-16); align-content: start; }
+  .setup h3 {
+    font-family: var(--font-family-display), sans-serif;
+    font-weight: var(--font-weight-regular);
+    font-size: var(--type-heading-md-size);
+    line-height: var(--type-heading-md-line-height);
+    text-transform: uppercase;
+  }
+  .setup ul { list-style: none; padding: 0; display: grid; gap: var(--space-8); }
+  .setup li {
+    display: grid;
+    grid-template-columns: var(--icon-size-default) 1fr;
+    gap: var(--space-8);
+    font-size: var(--type-body-md-size);
+    line-height: var(--line-height-24);
+  }
+  .setup li[data-has='false'] { color: var(--text-muted); text-decoration: line-through; }
+  .setup li[data-has='false'] svg { visibility: hidden; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    min-height: var(--filter-chip-height-min);
+    padding: var(--filter-chip-padding-vertical) var(--filter-chip-padding-horizontal);
+    border-radius: var(--filter-chip-radius);
+    border: var(--border-width-1) solid var(--border-control);
+    font-size: var(--type-body-sm-size);
+    line-height: var(--type-body-sm-line-height);
+    font-weight: var(--font-weight-medium);
+
+    &[data-highlight='true'] { background: var(--action-primary-background); border-color: var(--action-primary-background); }
+  }
+
+  .method { list-style: none; padding: 0; display: grid; gap: var(--space-16); }
+  .method li { display: grid; gap: var(--space-4); }
+  .method strong { font-weight: var(--font-weight-semibold); }
+  .method span { font-size: var(--type-body-md-size); line-height: var(--type-body-md-line-height); color: var(--text-muted); }
+
+  /* Learn: per-run strip */
+  .strip { display: grid; gap: var(--space-24); }
+  .strip-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* Room above the track for the mean label. */
+    gap: var(--space-24);
+  }
+  [data-layout='tablet'] .strip-row,
+  [data-layout='desktop'] .strip-row { grid-template-columns: 12rem 1fr; align-items: center; gap: var(--space-24); }
+  .strip-label { font-weight: var(--font-weight-medium); font-size: var(--type-body-md-size); line-height: var(--type-body-md-line-height); }
+  .strip-label span { display: block; color: var(--text-muted); font-weight: var(--font-weight-regular); }
+  .track {
+    --c-dot-size: 1.25rem;
+    position: relative;
+    height: var(--size-48);
+  }
+  .track::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 50%;
+    border-top: var(--border-width-1) solid var(--border-divider);
+  }
+  .gridline {
+    position: absolute;
+    top: 0; bottom: 0;
+    border-left: var(--border-width-1) dashed var(--border-divider);
+  }
+  .range {
+    position: absolute;
+    top: calc(50% - var(--space-4));
+    height: var(--space-8);
+    border-radius: var(--radius-full);
+    background: var(--surface-hover-overlay);
+  }
+  .dot {
+    position: absolute;
+    top: 50%;
+    width: var(--c-dot-size);
+    height: var(--c-dot-size);
+    margin: 0;
+    padding: 0;
+    transform: translate(-50%, -50%);
+    border-radius: var(--radius-full);
+    border: var(--border-width-2) solid var(--border-control);
+    background: var(--surface-raised);
+    box-shadow: 0 0 0 var(--border-width-2) var(--surface-raised);
+    cursor: default;
+
+    &[data-highlight='true'] { background: var(--action-primary-background); }
+    &:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: var(--focus-ring-offset); }
+  }
+  .tip {
+    position: absolute;
+    bottom: calc(100% + var(--space-8));
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    background: var(--text-default);
+    color: var(--text-inverted);
+    border-radius: var(--radius-8);
+    padding: var(--space-4) var(--space-8);
+    font-size: var(--type-body-sm-size);
+    line-height: var(--type-body-sm-line-height);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 1;
+  }
+  .dot:hover .tip, .dot:focus-visible .tip { opacity: 1; }
+  .dot[data-edge='end'] .tip { left: auto; right: calc(-1 * var(--space-4)); transform: none; }
+  .mean {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 0;
+    border-left: var(--border-width-2) solid var(--border-control);
+  }
+  .mean-label {
+    position: absolute;
+    top: calc(-1 * var(--space-16));
+    left: var(--space-4);
+    font-family: var(--font-family-mono), monospace;
+    font-size: var(--font-size-12);
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .axis {
+    position: relative;
+    height: var(--space-24);
+    font-family: var(--font-family-mono), monospace;
+    font-size: var(--font-size-12);
+    color: var(--text-muted);
+  }
+  .axis span { position: absolute; transform: translateX(-50%); }
+  .axis-row { display: grid; grid-template-columns: 1fr; }
+  [data-layout='tablet'] .axis-row,
+  [data-layout='desktop'] .axis-row { grid-template-columns: 12rem 1fr; gap: var(--space-24); }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-8) var(--space-24);
+    font-size: var(--type-body-sm-size);
+    line-height: var(--type-body-sm-line-height);
+    color: var(--text-muted);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: var(--space-8); }
+  .key-dot { width: var(--size-16); height: var(--size-16); border-radius: var(--radius-full); border: var(--border-width-2) solid var(--border-control); background: var(--surface-raised); }
+  .key-mean { width: 0; height: var(--size-16); border-left: var(--border-width-2) solid var(--border-control); }
+  .key-range { width: var(--size-24); height: var(--space-8); border-radius: var(--radius-full); background: var(--surface-hover-overlay); }
+
+  details summary {
+    cursor: pointer;
+    font-size: var(--type-body-md-size);
+    line-height: var(--type-body-md-line-height);
+    font-weight: var(--font-weight-medium);
+    width: fit-content;
+  }
+  details[open] summary { margin-bottom: var(--space-16); }
+
+  table { border-collapse: collapse; width: 100%; font-size: var(--type-body-md-size); line-height: var(--type-body-md-line-height); }
+  th, td { text-align: left; padding: var(--space-8) var(--space-12) var(--space-8) 0; border-bottom: var(--border-width-1) solid var(--border-divider); vertical-align: middle; }
+  thead th { font-family: var(--font-family-mono), monospace; font-weight: var(--font-weight-regular); font-size: var(--font-size-12); text-transform: uppercase; color: var(--text-muted); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* Learn: findings */
+  .finding { display: grid; gap: var(--space-12); align-content: start; }
+  .finding-stat {
+    font-family: var(--font-family-display), sans-serif;
+    font-size: var(--font-size-56);
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+  }
+  .finding-stat svg { width: var(--size-32); height: var(--size-32); flex: none; }
+  .finding h3 {
+    font-family: var(--font-family-text), sans-serif;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--type-title-md-size);
+    line-height: var(--type-title-md-line-height);
+  }
+  .finding p { font-size: var(--type-body-md-size); line-height: var(--line-height-22); color: var(--text-muted); }
+  .finding[data-accent='sunflower'] { background: var(--surface-accent-sunflower); }
+  .finding[data-accent='sunflower'] p { color: var(--text-default); }
+
+  /* Learn: requirement matrix */
+  .matrix-wrap { overflow-x: auto; }
+  .matrix { min-width: 34rem; }
+  .matrix td:not(:first-child), .matrix th:not(:first-child) { width: 9rem; }
+  .matrix .group td {
+    padding-top: var(--space-24);
+    font-family: var(--font-family-mono), monospace;
+    font-size: var(--font-size-12);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .matrix tr[data-differs='true'] td:first-child { font-weight: var(--font-weight-medium); }
+  .marks { display: inline-flex; gap: var(--space-4); }
+  .mark {
+    width: var(--size-16);
+    height: var(--size-16);
+    border-radius: var(--radius-4);
+    border: var(--border-width-2) solid var(--border-control);
+
+    &[data-verdict='met'] { background: var(--border-control); }
+    &[data-verdict='partial'] { background: linear-gradient(135deg, var(--border-control) 50%, transparent 50%); }
+  }
+
+  /* Change */
+  .change { list-style: none; padding: 0; display: grid; gap: var(--space-16); counter-reset: change; }
+  .change li {
+    display: grid;
+    grid-template-columns: var(--size-48) 1fr;
+    gap: var(--space-16);
+    align-items: start;
+  }
+  .change li::before {
+    counter-increment: change;
+    content: counter(change);
+    display: grid;
+    place-items: center;
+    width: var(--size-48);
+    height: var(--size-48);
+    border-radius: var(--radius-full);
+    background: var(--action-primary-background);
+    font-family: var(--font-family-display), sans-serif;
+    font-size: var(--font-size-28);
+  }
+  .change strong {
+    display: block;
+    font-family: var(--font-family-display), sans-serif;
+    font-weight: var(--font-weight-regular);
+    font-size: var(--type-heading-sm-size);
+    line-height: var(--type-heading-sm-line-height);
+    text-transform: uppercase;
+  }
+  .change span { font-size: var(--type-body-lg-size); line-height: var(--type-body-lg-line-height); color: var(--text-muted); }
+
+  code { font-family: var(--font-family-mono), monospace; font-size: 0.95em; }
+
+  .footer {
+    padding: var(--space-48) 0 var(--space-64);
+    border-top: var(--border-width-1) solid var(--border-divider);
+    display: grid;
+    gap: var(--space-8);
+    font-size: var(--type-body-sm-size);
+    line-height: var(--type-body-sm-line-height);
+    color: var(--text-muted);
+  }
+  .footer p { max-width: 56rem; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <span class="wordmark">ustwo</span>
+    <span class="overline">Design system evals · 18 Nov 2026</span>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="title">
+      <h1 id="title"><span>Measure,</span><span>learn,</span><span class="mint">change</span></h1>
+      <p class="lede">We asked an AI agent to build our Modal from its Figma file, three ways, and graded every result against the design spec. Contracts and an authoring skill took it from 81% to 98%.</p>
+
+      <div>
+        <div class="scores" role="list" aria-label="Mean spec conformance by setup">
+          <div class="score" role="listitem">
+            <span class="overline">No contracts, no skills</span>
+            <span class="score-value">81<small>%</small></span>
+            <span class="score-detail">Just Figma. Runs scored 69–94%.</span>
+          </div>
+          <svg class="score-arrow" aria-hidden="true" width="32" height="32" viewBox="0 0 24 24"><path d="M16.175 13H5C4.71667 13 4.47917 12.9042 4.2875 12.7125C4.09583 12.5208 4 12.2833 4 12C4 11.7167 4.09583 11.4792 4.2875 11.2875C4.47917 11.0958 4.71667 11 5 11H16.175L11.275 6.09999C11.075 5.89999 10.9792 5.66665 10.9875 5.39999C10.9958 5.13332 11.1 4.89999 11.3 4.69999C11.5 4.51665 11.7333 4.42082 12 4.41249C12.2667 4.40415 12.5 4.49999 12.7 4.69999L19.3 11.3C19.4 11.4 19.4708 11.5083 19.5125 11.625C19.5542 11.7417 19.575 11.8667 19.575 12C19.575 12.1333 19.5542 12.2583 19.5125 12.375C19.4708 12.4917 19.4 12.6 19.3 12.7L12.7 19.3C12.5167 19.4833 12.2875 19.575 12.0125 19.575C11.7375 19.575 11.5 19.4833 11.3 19.3C11.1 19.1 11 18.8625 11 18.5875C11 18.3125 11.1 18.075 11.3 17.875L16.175 13Z" fill="currentColor"/></svg>
+          <div class="score" role="listitem">
+            <span class="overline">Contracts</span>
+            <span class="score-value">96<small>%</small></span>
+            <span class="score-detail">Runs scored 92–98%.</span>
+          </div>
+          <svg class="score-arrow" aria-hidden="true" width="32" height="32" viewBox="0 0 24 24"><path d="M16.175 13H5C4.71667 13 4.47917 12.9042 4.2875 12.7125C4.09583 12.5208 4 12.2833 4 12C4 11.7167 4.09583 11.4792 4.2875 11.2875C4.47917 11.0958 4.71667 11 5 11H16.175L11.275 6.09999C11.075 5.89999 10.9792 5.66665 10.9875 5.39999C10.9958 5.13332 11.1 4.89999 11.3 4.69999C11.5 4.51665 11.7333 4.42082 12 4.41249C12.2667 4.40415 12.5 4.49999 12.7 4.69999L19.3 11.3C19.4 11.4 19.4708 11.5083 19.5125 11.625C19.5542 11.7417 19.575 11.8667 19.575 12C19.575 12.1333 19.5542 12.2583 19.5125 12.375C19.4708 12.4917 19.4 12.6 19.3 12.7L12.7 19.3C12.5167 19.4833 12.2875 19.575 12.0125 19.575C11.7375 19.575 11.5 19.4833 11.3 19.3C11.1 19.1 11 18.8625 11 18.5875C11 18.3125 11.1 18.075 11.3 17.875L16.175 13Z" fill="currentColor"/></svg>
+          <div class="score" role="listitem" data-highlight="true">
+            <span class="overline" style="color: var(--text-default)">Contracts + skill + standards</span>
+            <span class="score-value">98<small>%</small></span>
+            <span class="score-detail">Runs scored 96–100%.</span>
+          </div>
+        </div>
+        <p class="scores-caption">Mean spec conformance over 3 runs each, graded against 26 requirements from the Modal's Figma spec.</p>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="measure">
+      <div class="section-head">
+        <h2 id="measure"><span class="step" style="--c-step-bg: var(--surface-accent-volt)">01</span>Measure</h2>
+        <p>One real prompt, the same codebase and the same model, with only the scaffolding around the agent changed.</p>
+      </div>
+
+      <div class="grid">
+        <div class="card prompt">
+          <span class="overline">The prompt</span>
+          <blockquote>
+            <p>Using /authoring-design-system-components</p>
+            <p>Implement the following component: [link to the Modal in Figma]</p>
+            <p>Thanks</p>
+          </blockquote>
+          <p class="score-detail">Setups without the skill get the same prompt minus its first line. The agent has to find the spec in Figma itself.</p>
+        </div>
+
+        <div class="card">
+          <ul class="method">
+            <li><span class="overline">Builder</span><strong>Claude Sonnet 5.5 in headless Claude Code</strong><span>A clean worktree per run, read-only Figma tools, no access to the grading key.</span></li>
+            <li><span class="overline">Grader</span><strong>Claude Opus 5.5, no tools</strong><span>Reads the code against 26 requirements from the spec. Met scores 1, partial ½, missed 0.</span></li>
+            <li><span class="overline">Also checked</span><strong>Tests, typecheck, Storybook build</strong><span>The definition of done every PR already has to pass.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card setup">
+          <span class="chip">Baseline</span>
+          <h3>No contracts, no skills</h3>
+          <ul>
+            <li data-has="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.55 15.15L18.025 6.675C18.225 6.475 18.4583 6.375 18.725 6.375C18.9917 6.375 19.225 6.475 19.425 6.675C19.625 6.875 19.725 7.1125 19.725 7.3875C19.725 7.6625 19.625 7.9 19.425 8.1L10.25 17.3C10.05 17.5 9.81667 17.6 9.55 17.6C9.28333 17.6 9.05 17.5 8.85 17.3L4.55 13C4.35 12.8 4.25417 12.5625 4.2625 12.2875C4.27083 12.0125 4.375 11.775 4.575 11.575C4.775 11.375 5.0125 11.275 5.2875 11.275C5.5625 11.275 5.8 11.375 6 11.575L9.55 15.15Z" fill="currentColor"/></svg>Figma, tokens and existing components</li>
+            <li data-has="false"><svg viewBox="0 0 24 24" aria-hidden="true"></svg><span><span class="visually-hidden">Without: </span>Component contracts</span></li>
+            <li data-has="false"><svg viewBox="0 0 24 24" aria-hidden="true"></svg><span><span class="visually-hidden">Without: </span>Authoring skill and standards</span></li>
+          </ul>
+        </div>
+        <div class="card setup">
+          <span class="chip">Contracts</span>
+          <h3>Contracts, no skills</h3>
+          <ul>
+            <li data-has="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.55 15.15L18.025 6.675C18.225 6.475 18.4583 6.375 18.725 6.375C18.9917 6.375 19.225 6.475 19.425 6.675C19.625 6.875 19.725 7.1125 19.725 7.3875C19.725 7.6625 19.625 7.9 19.425 8.1L10.25 17.3C10.05 17.5 9.81667 17.6 9.55 17.6C9.28333 17.6 9.05 17.5 8.85 17.3L4.55 13C4.35 12.8 4.25417 12.5625 4.2625 12.2875C4.27083 12.0125 4.375 11.775 4.575 11.575C4.775 11.375 5.0125 11.275 5.2875 11.275C5.5625 11.275 5.8 11.375 6 11.575L9.55 15.15Z" fill="currentColor"/></svg>Figma, tokens and existing components</li>
+            <li data-has="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.55 15.15L18.025 6.675C18.225 6.475 18.4583 6.375 18.725 6.375C18.9917 6.375 19.225 6.475 19.425 6.675C19.625 6.875 19.725 7.1125 19.725 7.3875C19.725 7.6625 19.625 7.9 19.425 8.1L10.25 17.3C10.05 17.5 9.81667 17.6 9.55 17.6C9.28333 17.6 9.05 17.5 8.85 17.3L4.55 13C4.35 12.8 4.25417 12.5625 4.2625 12.2875C4.27083 12.0125 4.375 11.775 4.575 11.575C4.775 11.375 5.0125 11.275 5.2875 11.275C5.5625 11.275 5.8 11.375 6 11.575L9.55 15.15Z" fill="currentColor"/></svg>Component contracts and their tests</li>
+            <li data-has="false"><svg viewBox="0 0 24 24" aria-hidden="true"></svg><span><span class="visually-hidden">Without: </span>Authoring skill and standards</span></li>
+          </ul>
+        </div>
+        <div class="card setup">
+          <span class="chip" data-highlight="true">Contracts + skill</span>
+          <h3>Contracts, skill, standards</h3>
+          <ul>
+            <li data-has="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.55 15.15L18.025 6.675C18.225 6.475 18.4583 6.375 18.725 6.375C18.9917 6.375 19.225 6.475 19.425 6.675C19.625 6.875 19.725 7.1125 19.725 7.3875C19.725 7.6625 19.625 7.9 19.425 8.1L10.25 17.3C10.05 17.5 9.81667 17.6 9.55 17.6C9.28333 17.6 9.05 17.5 8.85 17.3L4.55 13C4.35 12.8 4.25417 12.5625 4.2625 12.2875C4.27083 12.0125 4.375 11.775 4.575 11.575C4.775 11.375 5.0125 11.275 5.2875 11.275C5.5625 11.275 5.8 11.375 6 11.575L9.55 15.15Z" fill="currentColor"/></svg>Figma, tokens and existing components</li>
+            <li data-has="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.55 15.15L18.025 6.675C18.225 6.475 18.4583 6.375 18.725 6.375C18.9917 6.375 19.225 6.475 19.425 6.675C19.625 6.875 19.725 7.1125 19.725 7.3875C19.725 7.6625 19.625 7.9 19.425 8.1L10.25 17.3C10.05 17.5 9.81667 17.6 9.55 17.6C9.28333 17.6 9.05 17.5 8.85 17.3L4.55 13C4.35 12.8 4.25417 12.5625 4.2625 12.2875C4.27083 12.0125 4.375 11.775 4.575 11.575C4.775 11.375 5.0125 11.275 5.2875 11.275C5.5625 11.275 5.8 11.375 6 11.575L9.55 15.15Z" fill="currentColor"/></svg>Component contracts and their tests</li>
+            <li data-has="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.55 15.15L18.025 6.675C18.225 6.475 18.4583 6.375 18.725 6.375C18.9917 6.375 19.225 6.475 19.425 6.675C19.625 6.875 19.725 7.1125 19.725 7.3875C19.725 7.6625 19.625 7.9 19.425 8.1L10.25 17.3C10.05 17.5 9.81667 17.6 9.55 17.6C9.28333 17.6 9.05 17.5 8.85 17.3L4.55 13C4.35 12.8 4.25417 12.5625 4.2625 12.2875C4.27083 12.0125 4.375 11.775 4.575 11.575C4.775 11.375 5.0125 11.275 5.2875 11.275C5.5625 11.275 5.8 11.375 6 11.575L9.55 15.15Z" fill="currentColor"/></svg>Authoring skill and standards</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="learn">
+      <div class="section-head">
+        <h2 id="learn"><span class="step" style="--c-step-bg: var(--surface-accent-rose)">02</span>Learn</h2>
+        <p>Every run passed tests, typecheck and the Storybook build. The usual checks couldn't tell the setups apart. Grading against the spec could.</p>
+      </div>
+
+      <figure class="card strip" aria-labelledby="strip-title">
+        <div class="section-head" style="gap: var(--space-8)">
+          <h3 class="sub-head" id="strip-title">Spec conformance, every run</h3>
+          <div class="legend" aria-hidden="true">
+            <span><i class="key-dot"></i>One run</span>
+            <span><i class="key-mean"></i>Mean</span>
+            <span><i class="key-range"></i>Spread</span>
+          </div>
+        </div>
+        <div id="strip" class="strip"></div>
+        <details>
+          <summary>Show as a table</summary>
+          <table>
+            <thead><tr><th>Setup</th><th class="num">Run 1</th><th class="num">Run 2</th><th class="num">Run 3</th><th class="num">Mean</th><th class="num">Read the written spec</th><th class="num">Cost per run</th></tr></thead>
+            <tbody id="strip-table"></tbody>
+          </table>
+        </details>
+      </figure>
+
+      <div class="grid">
+        <article class="card finding">
+          <span class="finding-stat">1/3<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.175 13H5C4.71667 13 4.47917 12.9042 4.2875 12.7125C4.09583 12.5208 4 12.2833 4 12C4 11.7167 4.09583 11.4792 4.2875 11.2875C4.47917 11.0958 4.71667 11 5 11H16.175L11.275 6.09999C11.075 5.89999 10.9792 5.66665 10.9875 5.39999C10.9958 5.13332 11.1 4.89999 11.3 4.69999C11.5 4.51665 11.7333 4.42082 12 4.41249C12.2667 4.40415 12.5 4.49999 12.7 4.69999L19.3 11.3C19.4 11.4 19.4708 11.5083 19.5125 11.625C19.5542 11.7417 19.575 11.8667 19.575 12C19.575 12.1333 19.5542 12.2583 19.5125 12.375C19.4708 12.4917 19.4 12.6 19.3 12.7L12.7 19.3C12.5167 19.4833 12.2875 19.575 12.0125 19.575C11.7375 19.575 11.5 19.4833 11.3 19.3C11.1 19.1 11 18.8625 11 18.5875C11 18.3125 11.1 18.075 11.3 17.875L16.175 13Z" fill="currentColor"/></svg>3/3</span>
+          <h3>Contracts send the agent to the spec</h3>
+          <p>Without contracts, only 1 of 3 runs read the written spec in Figma; the others built from screenshots. The run that never read it scored lowest, at 69%. A contract asks for usage rules and accessibility notes, so the agent goes looking for them.</p>
+        </article>
+        <article class="card finding">
+          <span class="finding-stat">0/3<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.175 13H5C4.71667 13 4.47917 12.9042 4.2875 12.7125C4.09583 12.5208 4 12.2833 4 12C4 11.7167 4.09583 11.4792 4.2875 11.2875C4.47917 11.0958 4.71667 11 5 11H16.175L11.275 6.09999C11.075 5.89999 10.9792 5.66665 10.9875 5.39999C10.9958 5.13332 11.1 4.89999 11.3 4.69999C11.5 4.51665 11.7333 4.42082 12 4.41249C12.2667 4.40415 12.5 4.49999 12.7 4.69999L19.3 11.3C19.4 11.4 19.4708 11.5083 19.5125 11.625C19.5542 11.7417 19.575 11.8667 19.575 12C19.575 12.1333 19.5542 12.2583 19.5125 12.375C19.4708 12.4917 19.4 12.6 19.3 12.7L12.7 19.3C12.5167 19.4833 12.2875 19.575 12.0125 19.575C11.7375 19.575 11.5 19.4833 11.3 19.3C11.1 19.1 11 18.8625 11 18.5875C11 18.3125 11.1 18.075 11.3 17.875L16.175 13Z" fill="currentColor"/></svg>3/3</span>
+          <h3>Contracts bring the docs and the tests</h3>
+          <p>No baseline run fully documented when to use the Modal and when not to, and only 1 of 3 tested its dialog behaviour properly. With contracts, all 3 did both: the contract asks for the usage guidance, and its checks set the bar for tests.</p>
+        </article>
+        <article class="card finding" data-accent="sunflower">
+          <span class="finding-stat">25<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.175 13H5C4.71667 13 4.47917 12.9042 4.2875 12.7125C4.09583 12.5208 4 12.2833 4 12C4 11.7167 4.09583 11.4792 4.2875 11.2875C4.47917 11.0958 4.71667 11 5 11H16.175L11.275 6.09999C11.075 5.89999 10.9792 5.66665 10.9875 5.39999C10.9958 5.13332 11.1 4.89999 11.3 4.69999C11.5 4.51665 11.7333 4.42082 12 4.41249C12.2667 4.40415 12.5 4.49999 12.7 4.69999L19.3 11.3C19.4 11.4 19.4708 11.5083 19.5125 11.625C19.5542 11.7417 19.575 11.8667 19.575 12C19.575 12.1333 19.5542 12.2583 19.5125 12.375C19.4708 12.4917 19.4 12.6 19.3 12.7L12.7 19.3C12.5167 19.4833 12.2875 19.575 12.0125 19.575C11.7375 19.575 11.5 19.4833 11.3 19.3C11.1 19.1 11 18.8625 11 18.5875C11 18.3125 11.1 18.075 11.3 17.875L16.175 13Z" fill="currentColor"/></svg>4 pts</span>
+          <h3>The skill makes it repeatable</h3>
+          <p>The spread between best and worst run shrank from 25 points to 4. Only with the skill and standards did every run get the exact width per viewport, an explicit viewport prop and 48px touch targets.</p>
+        </article>
+      </div>
+
+      <figure class="card" aria-labelledby="matrix-title">
+        <div class="section-head" style="gap: var(--space-8); margin-bottom: var(--space-24)">
+          <h3 class="sub-head" id="matrix-title">Spec requirements met, run by run</h3>
+          <div class="legend" aria-hidden="true">
+            <span><i class="mark" data-verdict="met"></i>Met</span>
+            <span><i class="mark" data-verdict="partial"></i>Partial</span>
+            <span><i class="mark" data-verdict="missed"></i>Missed</span>
+          </div>
+        </div>
+        <div class="matrix-wrap">
+          <table class="matrix">
+            <thead><tr><th>Requirement from the spec</th><th>No contracts</th><th>Contracts</th><th>Contracts + skill</th></tr></thead>
+            <tbody id="matrix"></tbody>
+          </table>
+        </div>
+      </figure>
+      <figure class="card" aria-labelledby="standards-title">
+        <div class="section-head" style="gap: var(--space-8); margin-bottom: var(--space-24)">
+          <h3 class="sub-head" id="standards-title">Against our standards</h3>
+          <p class="score-detail">The same runs graded against every rule in our component standards. Rules that need a contract file are counted separately, so the baseline isn't marked down for files it couldn't write.</p>
+        </div>
+        <div class="matrix-wrap">
+          <table>
+            <thead><tr><th>Setup</th><th class="num">Standards met</th><th class="num">Every run</th><th class="num">Blocker rules broken</th><th class="num">Contract rules met</th></tr></thead>
+            <tbody id="standards"></tbody>
+          </table>
+        </div>
+        <p class="scores-caption">Without contracts the code was already close to our general rules; the skill made it the same every time. Its only repeated miss was naming the prop <code>viewport</code>, as the spec asks, where a rule says <code>variant</code>.</p>
+      </figure>
+    </section>
+
+    <section class="section" aria-labelledby="change">
+      <div class="section-head">
+        <h2 id="change"><span class="step" style="--c-step-bg: var(--surface-accent-sunflower)">03</span>Change</h2>
+        <p>What we're doing differently because of it.</p>
+      </div>
+      <ol class="change">
+        <li><div><strong>Contract first</strong><span>Every new component starts with its contract. It's where most of the quality comes from: it sends the agent to the spec and its tests hold the result to it.</span></div></li>
+        <li><div><strong>Skill and standards for consistency</strong><span>They turn a good result into a repeatable one, for about 14¢ more per component.</span></div></li>
+        <li><div><strong>Grade against the design, not just the build</strong><span>A green pipeline didn't separate these setups. Grading the code against the Figma spec did.</span></div></li>
+        <li><div><strong>Fix the standards where they fight the spec</strong><span>One rule asks for a prop called variant where the spec says viewport. The skill followed the spec and was marked down for it. The spec should win.</span></div></li>
+        <li><div><strong>Keep measuring</strong><span>Re-run with every new model and every change to the skill or standards. Next: more runs per setup, and specs that leave more to judgement.</span></div></li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Method: three runs per setup on the same commit, 18 November 2026. Builder Claude Sonnet 5.5 (headless Claude Code with read-only Figma access), grader Claude Opus 5.5 (no tools) against 26 requirements written from the Modal's Figma spec, and separately against the active rules in our component standards. Three runs is a small sample, and a model grader isn't perfectly consistent, so treat differences of a few points as directional.</p>
+    <p>Built with the ustwo design system: its tokens, Bebas Neue, Inter and DM Mono, and icons from the ustwo icon library.</p>
+  </footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+  // SETUPS and REQUIREMENTS come from data.js, generated from the saved eval results.
+  var MIN = 60, MAX = 100;
+  var pos = function (v) { return ((v - MIN) / (MAX - MIN)) * 100 + '%'; };
+  var mean = function (xs) { return xs.reduce(function (a, b) { return a + b; }, 0) / xs.length; };
+  var pct = function (v) { return Math.round(v) + '%'; };
+
+  var strip = document.getElementById('strip');
+  var ticks = [60, 70, 80, 90, 100];
+  var gridlines = ticks.map(function (t) { return '<i class="gridline" style="left:' + pos(t) + '"></i>'; }).join('');
+
+  strip.innerHTML = SETUPS.map(function (s) {
+    var m = mean(s.runs);
+    var lo = Math.min.apply(null, s.runs), hi = Math.max.apply(null, s.runs);
+    var dots = s.runs.map(function (r, i) {
+      return '<button type="button" class="dot" data-edge="' + (r > 90 ? 'end' : 'middle') + '" data-highlight="' + s.highlight + '" style="left:' + pos(r) + '" aria-label="' + s.name + ', run ' + (i + 1) + ': ' + pct(r) + '"><span class="tip" aria-hidden="true">Run ' + (i + 1) + ' · ' + pct(r) + '</span></button>';
+    }).join('');
+    return '<div class="strip-row">' +
+      '<div class="strip-label">' + s.short + '<span>mean ' + pct(m) + ', spread ' + Math.round(hi - lo) + ' pts</span></div>' +
+      '<div class="track">' + gridlines +
+        '<i class="range" style="left:' + pos(lo) + ';width:calc(' + pos(hi) + ' - ' + pos(lo) + ')"></i>' +
+        '<i class="mean" style="left:' + pos(m) + '" aria-hidden="true"><span class="mean-label">' + pct(m) + '</span></i>' +
+        dots +
+      '</div></div>';
+  }).join('') +
+  '<div class="axis-row" aria-hidden="true"><span></span><div class="axis">' +
+    ticks.map(function (t) { return '<span style="left:' + pos(t) + '">' + t + '%</span>'; }).join('') +
+  '</div></div>';
+
+  var blockerTotal = function (s) { return s.blockersBroken.reduce(function (a, b) { return a + b; }, 0); };
+  document.getElementById('standards').innerHTML = SETUPS.map(function (s) {
+    return '<tr><th scope="row">' + s.name + '</th>' +
+      '<td class="num">' + pct(mean(s.standards)) + '</td>' +
+      '<td class="num">' + s.standards.map(pct).join(' · ') + '</td>' +
+      '<td class="num">' + blockerTotal(s) + ' in ' + s.runs.length + ' runs</td>' +
+      '<td class="num">' + mean(s.contractRulesMet).toFixed(1) + ' of ' + s.contractRules + '</td></tr>';
+  }).join('');
+
+  document.getElementById('strip-table').innerHTML = SETUPS.map(function (s) {
+    return '<tr><th scope="row">' + s.name + '</th>' +
+      s.runs.map(function (r) { return '<td class="num">' + pct(r) + '</td>'; }).join('') +
+      '<td class="num">' + pct(mean(s.runs)) + '</td>' +
+      '<td class="num">' + s.specRead + '</td>' +
+      '<td class="num">$' + mean(s.cost).toFixed(2) + '</td></tr>';
+  }).join('');
+
+  var count = function (vs, v) { return vs.filter(function (x) { return x === v; }).length; };
+  var cell = function (vs) {
+    var label = count(vs, 'met') + ' of 3 met' + (count(vs, 'partial') ? ', ' + count(vs, 'partial') + ' partial' : '');
+    return '<td><span class="marks" role="img" aria-label="' + label + '">' +
+      vs.map(function (v) { return '<i class="mark" data-verdict="' + v + '"></i>'; }).join('') +
+      '</span></td>';
+  };
+  document.getElementById('matrix').innerHTML = REQUIREMENTS.map(function (group) {
+    return '<tr class="group"><td colspan="4">' + group[0] + '</td></tr>' +
+      group[1].map(function (r) {
+        var differs = JSON.stringify(r[1]) !== JSON.stringify(r[3]) || JSON.stringify(r[2]) !== JSON.stringify(r[3]);
+        return '<tr data-differs="' + differs + '"><td>' + r[0] + '</td>' + cell(r[1]) + cell(r[2]) + cell(r[3]) + '</tr>';
+      }).join('');
+  }).join('');
+</script>
+</body>
+</html>
